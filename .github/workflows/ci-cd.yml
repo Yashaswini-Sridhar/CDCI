@@ -25,6 +25,43 @@ jobs:
       run: npm run lint
       
     - name: Run tests
+
+
+    deploy-to-staging:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up environment
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+        
+    - name: Install dependencies
+      run: npm ci
+        
+    - name: Build application
+      run: npm run build
+      
+    - name: Deploy to staging
+      uses: some-deployment-action@v1  # Choose appropriate action for your platform
+      with:
+        # Configuration for your specific deployment target
+        # For example, if deploying to AWS:
+        aws-access-key: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-key: ${{ secrets.AWS_SECRET_KEY }}
+        aws-region: us-east-1
+        s3-bucket: your-staging-bucket
+
+
+        - name: Archive build logs
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-logs
+        path: logs/
       run: npm test
       
     - name: Build application
